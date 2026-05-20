@@ -28,8 +28,6 @@ import android.content.Intent
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 
-// Search/explore screen with category chips, city filters, text search, and "Near Me" location filter.
-// Used by MainActivity as Tab 2. Connects to FirebaseManager for events, DataRepository for recommendations.
 class SearchFragment : Fragment() {
 
     private var _binding: FragmentSearchBinding? = null
@@ -84,16 +82,13 @@ class SearchFragment : Fragment() {
         restoreSavedFilters()
         binding.searchSRLRefresh.setColorSchemeResources(R.color.accent_primary)
         binding.searchSRLRefresh.setOnRefreshListener {
-            // Dead code wired: refresh city list on pull-to-refresh
             val cityNames = listOf(ALL_CITIES) + IsraeliLocations.cities.map { it.name }
             cityAdapter.updateCities(cityNames)
             loadEvents()
             loadRecommendations()
         }
-        viewLifecycleOwner.lifecycleScope.launch {
-            loadEvents()
-            loadRecommendations()
-        }
+        loadEvents()
+        loadRecommendations()
     }
 
     // --- Category Chips ---
@@ -237,13 +232,11 @@ class SearchFragment : Fragment() {
 
     private fun loadEvents() {
         DataRepository.getEvents { events, _ ->
-            viewLifecycleOwner.lifecycleScope.launch {
-                if (_binding == null) return@launch
-                allEvents = events ?: emptyList()
-                updateTrendingSection()
-                applyFilters()
-                _binding?.searchSRLRefresh?.isRefreshing = false
-            }
+            val b = _binding ?: return@getEvents
+            allEvents = events ?: emptyList()
+            updateTrendingSection()
+            applyFilters()
+            b.searchSRLRefresh.isRefreshing = false
         }
     }
 
@@ -251,7 +244,6 @@ class SearchFragment : Fragment() {
         val b = _binding ?: return
         val hotEvents = allEvents.filter { it.isHot && DateFormatter.isEventDateTodayOrFuture(it.date) }
         trendingAdapter.submitList(hotEvents)
-
         b.searchLAYOUTTrending.visibility =
             if (hotEvents.isNotEmpty()) View.VISIBLE else View.GONE
     }
@@ -264,16 +256,14 @@ class SearchFragment : Fragment() {
         }
 
         DataRepository.getRecommendedEvents(preferredCategories) { events ->
-            viewLifecycleOwner.lifecycleScope.launch {
-                val b = _binding ?: return@launch
-                recommendationsAdapter.submitList(events)
-                b.searchLBLNoRecommendations.visibility =
-                    if (events.isEmpty()) View.VISIBLE else View.GONE
-                b.searchRVRecommendations.visibility =
-                    if (events.isEmpty()) View.GONE else View.VISIBLE
-                b.searchLAYOUTRecommendations.visibility =
-                    if (events.isEmpty()) View.GONE else View.VISIBLE
-            }
+            val b = _binding ?: return@getRecommendedEvents
+            recommendationsAdapter.submitList(events)
+            b.searchLBLNoRecommendations.visibility =
+                if (events.isEmpty()) View.VISIBLE else View.GONE
+            b.searchRVRecommendations.visibility =
+                if (events.isEmpty()) View.GONE else View.VISIBLE
+            b.searchLAYOUTRecommendations.visibility =
+                if (events.isEmpty()) View.GONE else View.VISIBLE
         }
     }
 
@@ -284,38 +274,31 @@ class SearchFragment : Fragment() {
         val query = b.searchEDTQuery.text?.toString()?.trim() ?: ""
 
         val finalFiltered = allEvents.filter { event ->
-            // Date filter — never show past events
             DateFormatter.isEventDateTodayOrFuture(event.date) &&
-            // Text search
-            (query.isEmpty() ||
-                    event.title.contains(query, ignoreCase = true) ||
-                    event.category.contains(query, ignoreCase = true) ||
-                    event.subcategory.contains(query, ignoreCase = true) ||
-                    event.location.contains(query, ignoreCase = true) ||
-                    event.venue.contains(query, ignoreCase = true)) &&
-            // Category filter
-            (selectedCategory == "all" ||
-                    event.category.equals(selectedCategory, ignoreCase = true) ||
-                    event.category.contains(selectedCategory, ignoreCase = true)) &&
-            // Subcategory filter
-            (selectedSubcategory == null ||
-                    event.subcategory.equals(selectedSubcategory, ignoreCase = true)) &&
-            // City filter — match by location name or venue names in that city
-            (selectedCity == ALL_CITIES ||
-                    event.location.contains(selectedCity, ignoreCase = true) ||
-                    IsraeliLocations.getVenuesByCity(selectedCity).any { venue ->
-                        event.venue.contains(venue.name, ignoreCase = true)
-                    })
+                    (query.isEmpty() ||
+                            event.title.contains(query, ignoreCase = true) ||
+                            event.category.contains(query, ignoreCase = true) ||
+                            event.subcategory.contains(query, ignoreCase = true) ||
+                            event.location.contains(query, ignoreCase = true) ||
+                            event.venue.contains(query, ignoreCase = true)) &&
+                    (selectedCategory == "all" ||
+                            event.category.equals(selectedCategory, ignoreCase = true) ||
+                            event.category.contains(selectedCategory, ignoreCase = true)) &&
+                    (selectedSubcategory == null ||
+                            event.subcategory.equals(selectedSubcategory, ignoreCase = true)) &&
+                    (selectedCity == ALL_CITIES ||
+                            event.location.contains(selectedCity, ignoreCase = true) ||
+                            IsraeliLocations.getVenuesByCity(selectedCity).any { venue ->
+                                event.venue.contains(venue.name, ignoreCase = true)
+                            })
         }
 
         eventAdapter.submitList(finalFiltered)
 
-        // Save query to search history if it produced results
         if (query.isNotEmpty() && finalFiltered.isNotEmpty()) {
             saveQueryToHistory(query)
         }
 
-        // Persist current filter state
         saveCurrentFilters()
 
         val filterOptions = FilterOptions(
@@ -327,7 +310,6 @@ class SearchFragment : Fragment() {
         val hasActiveFilter = query.isNotEmpty() || selectedCategory != "all" ||
                 selectedCity != ALL_CITIES || selectedSubcategory != null
 
-        // Hide search history when there's an active query
         b.searchLAYOUTHistory.visibility = if (query.isEmpty() && !hasActiveFilter) {
             if (MyApp.sharedPrefsManager.getSearchHistory().isNotEmpty()) View.VISIBLE else View.GONE
         } else View.GONE
@@ -366,10 +348,9 @@ class SearchFragment : Fragment() {
 
     private fun setupSearchHistory() {
         loadSearchHistory()
-        // Merge cloud-synced User.searchHistory into the local prefs list so users see
-        // their history across devices. The local list is the source of truth for display.
         DataRepository.getUserProfile { user, _ ->
-            if (_binding == null || user == null) return@getUserProfile
+            val b = _binding ?: return@getUserProfile
+            if (user == null) return@getUserProfile
             val cloud = user.searchHistory
             if (cloud.isEmpty()) return@getUserProfile
             val prefs = MyApp.sharedPrefsManager
@@ -381,7 +362,6 @@ class SearchFragment : Fragment() {
             MyApp.sharedPrefsManager.clearSearchHistory()
             binding.searchCHIPGHistory.removeAllViews()
             binding.searchLAYOUTHistory.visibility = View.GONE
-            // Also clear the cloud copy so the next sign-in starts empty.
             DataRepository.updateUser(mapOf("searchHistory" to emptyList<String>())) { _, _ -> }
         }
     }
@@ -424,7 +404,6 @@ class SearchFragment : Fragment() {
         history.add(0, query)
         val trimmed = history.take(10)
         prefs.saveSearchHistory(trimmed)
-        // Persist the same list to User.searchHistory so it follows the user across devices.
         DataRepository.updateUser(mapOf("searchHistory" to trimmed)) { _, _ -> }
     }
 
