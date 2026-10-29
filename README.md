@@ -87,7 +87,35 @@ app/src/main/java/com/roei/stagemate/
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## 5 Demonstration
-> Screenshots and demo video coming soon.
+### Onboarding
+
+<p align="center">
+  <img src="docs/screenshots/01_onboarding_discover.jpg" alt="Onboarding - Discover Events" width="240" />
+  <img src="docs/screenshots/02_onboarding_book.jpg" alt="Onboarding - Book Tickets" width="240" />
+  <img src="docs/screenshots/03_onboarding_enjoy.jpg" alt="Onboarding - Enjoy the Show" width="240" />
+</p>
+
+### Authentication
+
+<p align="center">
+  <img src="docs/screenshots/04_login.jpg" alt="Login" width="240" />
+  <img src="docs/screenshots/05_signup.jpg" alt="Sign Up" width="240" />
+</p>
+
+### Main Screens
+
+<p align="center">
+  <img src="docs/screenshots/06_home.jpg" alt="Home" width="200" />
+  <img src="docs/screenshots/07_search.jpg" alt="Search" width="200" />
+  <img src="docs/screenshots/08_tickets.jpg" alt="My Tickets" width="200" />
+  <img src="docs/screenshots/09_profile.jpg" alt="Profile" width="200" />
+</p>
+
+### Demo Video
+
+Full booking flow - login, event details, seat selection and payment:
+
+[▶️ Watch the demo video](docs/demo.mp4)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
