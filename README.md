@@ -111,6 +111,29 @@ app/src/main/java/com/roei/stagemate/
   <img src="docs/screenshots/09_profile.webp" alt="Profile" width="200" />
 </p>
 
+### Event Page
+
+<p align="center">
+  <img src="docs/screenshots/10_trending_popup.webp" alt="Trending Now Popup" width="240" />
+  <img src="docs/screenshots/11_event_details.webp" alt="Event Details" width="240" />
+  <img src="docs/screenshots/12_event_info.webp" alt="Event Location and Booking" width="240" />
+</p>
+
+### Seat Selection
+
+<p align="center">
+  <img src="docs/screenshots/13_seat_map.webp" alt="Venue Section Map" width="240" />
+  <img src="docs/screenshots/14_seat_selection.webp" alt="Seat Selection" width="240" />
+</p>
+
+### Payment
+
+<p align="center">
+  <img src="docs/screenshots/15_order_summary.webp" alt="Order Summary" width="240" />
+  <img src="docs/screenshots/16_payment.webp" alt="Payment Details" width="240" />
+  <img src="docs/screenshots/17_payment_success.webp" alt="Payment Successful" width="240" />
+</p>
+
 ### Demo Video
 
 Full booking flow - login, event details, seat selection and payment:
